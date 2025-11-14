@@ -66,18 +66,18 @@ TFT_eSPI tft = TFT_eSPI();
 // ----------------------------
 // AirGradient Data Variables
 // ----------------------------
-const char *locNameInside;
-const char *locNameOutside;
-const char *place_timezone;
-const char *location;
+String locNameInside;
+String locNameOutside;
+String place_timezone;
+String location;
 bool outdoor_offline;
 bool indoor_offline;
-const char *outdoor_policy;
-const char *outdoor_date;
-const char *indoor_date;
+String outdoor_policy;
+String outdoor_date;
+String indoor_date;
 
 String deviceID;
-const char *timex;
+String timex;
 int pm02;
 int pi02;
 int pi02_outside;
@@ -88,16 +88,16 @@ int rhum_outside;
 int rhum;
 int heat;
 
-const char *pi02_color;
-const char *pi02_color_outside;
-const char *pi02_category;
-const char *pm02_color;
-const char *pm02_category;
-const char *rco2_color;
-const char *rco2_category;
-const char *heat_color;
-const char *heat_color_outside;
-const char *heat_category;
+String pi02_color;
+String pi02_color_outside;
+String pi02_category;
+String pm02_color;
+String pm02_category;
+String rco2_color;
+String rco2_category;
+String heat_color;
+String heat_color_outside;
+String heat_category;
 
 // ----------------------------
 // Configuration
@@ -219,7 +219,7 @@ String getDeviceId() {
 // Parse JSON payload from API
 // ----------------------------
 void payloadToDataInside(String payload) {
-    DynamicJsonDocument doc(2048);
+    JsonDocument doc;
     DeserializationError error = deserializeJson(doc, payload);
 
     if (error) {
@@ -229,48 +229,48 @@ void payloadToDataInside(String payload) {
     }
 
     // Place information
-    location = doc["place"]["name"];
-    place_timezone = doc["place"]["timezone"];
+    location = doc["place"]["name"].as<const char*>();
+    place_timezone = doc["place"]["timezone"].as<const char*>();
 
     // Outdoor data
     JsonObject outdoor = doc["outdoor"];
-    locNameOutside = outdoor["name"];
+    locNameOutside = outdoor["name"].as<const char*>();
     outdoor_offline = outdoor["offline"];
-    outdoor_policy = outdoor["guidelines"][0]["title"];
+    outdoor_policy = outdoor["guidelines"][0]["title"].as<const char*>();
 
     JsonObject outdoor_current = outdoor["current"];
     atmp_outside = outdoor_current["atmp"];
     rhum_outside = outdoor_current["rhum"];
-    outdoor_date = outdoor_current["date"];
+    outdoor_date = outdoor_current["date"].as<const char*>();
 
     // Indoor data
     JsonObject indoor = doc["indoor"];
-    locNameInside = indoor["name"];
+    locNameInside = indoor["name"].as<const char*>();
     indoor_offline = indoor["offline"];
 
     JsonObject indoor_current = indoor["current"];
     atmp = indoor_current["atmp"];
     rhum = indoor_current["rhum"];
     rco2 = indoor_current["rco2"];
-    indoor_date = indoor_current["date"];
-    rco2_color = indoor_current["rco2_clr"];
-    rco2_category = indoor_current["rco2_lbl"];
+    indoor_date = indoor_current["date"].as<const char*>();
+    rco2_color = indoor_current["rco2_clr"].as<const char*>();
+    rco2_category = indoor_current["rco2_lbl"].as<const char*>();
 
     // PM2.5 data (US AQI or µg/m³)
     if (inUSaqi) {
         pi02_outside = outdoor_current["pi02"];
-        pi02_color_outside = outdoor_current["pi02_clr"];
-        pi02_category = outdoor_current["pi02_lbl"];
+        pi02_color_outside = outdoor_current["pi02_clr"].as<const char*>();
+        pi02_category = outdoor_current["pi02_lbl"].as<const char*>();
         pi02 = indoor_current["pi02"];
-        pi02_color = indoor_current["pi02_clr"];
-        pi02_category = indoor_current["pi02_lbl"];
+        pi02_color = indoor_current["pi02_clr"].as<const char*>();
+        pi02_category = indoor_current["pi02_lbl"].as<const char*>();
     } else {
         pi02_outside = outdoor_current["pm02"];
-        pi02_color_outside = outdoor_current["pm02_clr"];
-        pi02_category = outdoor_current["pm02_lbl"];
+        pi02_color_outside = outdoor_current["pm02_clr"].as<const char*>();
+        pi02_category = outdoor_current["pm02_lbl"].as<const char*>();
         pi02 = indoor_current["pm02"];
-        pi02_color = indoor_current["pm02_clr"];
-        pi02_category = indoor_current["pm02_lbl"];
+        pi02_color = indoor_current["pm02_clr"].as<const char*>();
+        pi02_category = indoor_current["pm02_lbl"].as<const char*>();
     }
 }
 
@@ -319,14 +319,14 @@ void updateDisplay() {
     y += 15;
 
     // PM2.5 box
-    tft.fillRoundRect(5, y, boxWidth, boxHeight, radius, getColorFromString(String(pi02_color_outside)));
+    tft.fillRoundRect(5, y, boxWidth, boxHeight, radius, getColorFromString(pi02_color_outside));
 
     // Temperature/Humidity box
     tft.fillRoundRect(5 + boxWidth + spacing, y, boxWidth, boxHeight, radius, TFT_DARKGREY);
 
     // PM2.5 value
     tft.setTextSize(3);
-    tft.setTextColor(TFT_BLACK, getColorFromString(String(pi02_color_outside)));
+    tft.setTextColor(TFT_BLACK, getColorFromString(pi02_color_outside));
     tft.setCursor(20, y + 15);
     tft.println(String(pi02_outside));
 
@@ -365,14 +365,14 @@ void updateDisplay() {
     y += 15;
 
     // PM2.5 box
-    tft.fillRoundRect(5, y, boxWidth, boxHeight, radius, getColorFromString(String(pi02_color)));
+    tft.fillRoundRect(5, y, boxWidth, boxHeight, radius, getColorFromString(pi02_color));
 
     // CO2 box
-    tft.fillRoundRect(5 + boxWidth + spacing, y, boxWidth, boxHeight, radius, getColorFromString(String(rco2_color)));
+    tft.fillRoundRect(5 + boxWidth + spacing, y, boxWidth, boxHeight, radius, getColorFromString(rco2_color));
 
     // PM2.5 value
     tft.setTextSize(3);
-    tft.setTextColor(TFT_BLACK, getColorFromString(String(pi02_color)));
+    tft.setTextColor(TFT_BLACK, getColorFromString(pi02_color));
     tft.setCursor(20, y + 15);
     tft.println(String(pi02));
 
@@ -387,7 +387,7 @@ void updateDisplay() {
 
     // CO2 value
     tft.setTextSize(3);
-    tft.setTextColor(TFT_BLACK, getColorFromString(String(rco2_color)));
+    tft.setTextColor(TFT_BLACK, getColorFromString(rco2_color));
     tft.setCursor(20 + boxWidth + spacing, y + 15);
     tft.println(String(rco2));
 
@@ -401,7 +401,7 @@ void updateDisplay() {
     tft.setTextSize(1);
     tft.setTextColor(TFT_DARKGREY, TFT_BLACK);
     tft.setCursor(5, y);
-    tft.println(String(indoor_date));
+    tft.println(indoor_date);
 }
 
 // ----------------------------
