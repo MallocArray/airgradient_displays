@@ -550,7 +550,9 @@ void connectToWifi() {
     WiFiManager wifiManager;
 
     String HOTSPOT = "AIRGRADIENT-CYD-" + getDeviceId();
-    wifiManager.setTimeout(120);
+    wifiManager.setTimeout(120);  // 2 minute timeout for config portal
+    wifiManager.setConnectTimeout(30);  // 30 second timeout per WiFi connection attempt
+    wifiManager.setConnectRetries(7);   // Try connecting   5 times before giving up
 
     // Set callback for when entering config mode (AP mode)
     wifiManager.setAPCallback(configModeCallback);
@@ -561,14 +563,14 @@ void connectToWifi() {
     tft.setTextColor(TFT_WHITE, TFT_BLACK);
     tft.setCursor(10, 165);
     tft.println("Connecting to WiFi...");
-    Serial.println("Attempting WiFi connection...");
 
     // autoConnect will:
-    // 1. Try to connect with saved credentials
+    // 1. Try to connect with saved credentials (waits up to 30 seconds)
     // 2. If that fails, start config portal (triggers callback)
     // 3. Return true if connected, false if timeout
-    if (!wifiManager.autoConnect(HOTSPOT.c_str())) {
-        Serial.println("Failed to connect and hit timeout");
+    bool connected = wifiManager.autoConnect(HOTSPOT.c_str());
+
+    if (!connected) {
         tft.fillRect(0, 160, 320, 80, TFT_BLACK);
         tft.setCursor(10, 165);
         tft.setTextColor(TFT_RED, TFT_BLACK);
@@ -588,8 +590,10 @@ void connectToWifi() {
     tft.println("WiFi Connected!");
     tft.setTextColor(TFT_WHITE, TFT_BLACK);
     tft.setCursor(10, 180);
+    tft.print("SSID: ");
+    tft.println(WiFi.SSID());
+    tft.setCursor(10, 195);
     tft.print("IP: ");
     tft.println(WiFi.localIP());
-    Serial.println("Connected! IP: " + WiFi.localIP().toString());
     delay(2000);
 }
