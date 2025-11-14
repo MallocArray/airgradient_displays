@@ -104,7 +104,7 @@ String heat_category;
 // ----------------------------
 #define API_ROOT "http://hw.airgradient.com/displays/"
 boolean inUSaqi = false;  // Set to true for US AQI instead of µg/m³
-boolean inF = false;       // Set to true for Fahrenheit instead of Celsius
+boolean inF = true;       // Set to true for Fahrenheit instead of Celsius
 
 // ----------------------------
 // Color Definitions for TFT_eSPI
