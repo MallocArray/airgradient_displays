@@ -492,7 +492,7 @@ void updateDisplay() {
     tft.setTextSize(1);
     tft.setTextColor(TFT_DARKGREY, TFT_BLACK);
     tft.setCursor(5, y);
-    tft.println("Updated: ");
+    tft.print("Updated: ");
     tft.println(indoor_date);
 }
 
