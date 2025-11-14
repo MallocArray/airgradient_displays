@@ -161,50 +161,141 @@ void setup() {
     Serial.println(WiFi.localIP());
 
     tft.fillScreen(TFT_BLACK);
-    delay(2000);
+    delay(1000);
+
+    // Fetch initial data on startup
+    tft.setTextColor(TFT_WHITE, TFT_BLACK);
+    tft.setTextSize(2);
+    tft.setCursor(10, 100);
+    tft.println("Loading data...");
+    Serial.println("Fetching initial data...");
+
+    HTTPClient http;
+    http.begin(API_ROOT + getDeviceId());
+    http.setTimeout(10000);
+    http.setReuse(false);
+
+    int httpCode = http.GET();
+    if (httpCode == 200) {
+        String airData = http.getString();
+        payloadToDataInside(airData);
+        Serial.println("Initial data loaded successfully");
+        updateDisplay();
+    } else {
+        Serial.print("Initial fetch failed with HTTP error: ");
+        Serial.println(httpCode);
+        tft.fillScreen(TFT_BLACK);
+        tft.setTextColor(TFT_RED, TFT_BLACK);
+        tft.setTextSize(2);
+        tft.setCursor(10, 100);
+        tft.println("Data load failed");
+        tft.setTextSize(1);
+        tft.setCursor(10, 130);
+        tft.println("Will retry in 5 minutes");
+        tft.setCursor(10, 145);
+        tft.println("Or tap screen to refresh");
+    }
+    http.end();
 }
 
 // ----------------------------
 // Main Loop
 // ----------------------------
 void loop() {
-    // Check if WiFi is connected
-    if (WiFi.status() != WL_CONNECTED) {
-        Serial.println("WiFi disconnected, reconnecting...");
-        connectToWifi();
-        return;
+    // Touch-to-refresh: check for touch to trigger immediate refresh
+    static unsigned long lastUpdate = 0;
+    static const unsigned long updateInterval = 300000; // 5 minutes (300000 ms)
+    bool manualRefresh = false;
+
+    // Check for touch
+    if (ts.touched()) {
+        TS_Point p = ts.getPoint();
+        // Simple debounce: only allow refresh if last update > 2s ago
+        if (millis() - lastUpdate > 2000) {
+            manualRefresh = true;
+            Serial.println("Touch detected - manual refresh triggered");
+
+            // Visual feedback for touch
+            tft.fillScreen(TFT_BLACK);
+            tft.setTextColor(TFT_CYAN, TFT_BLACK);
+            tft.setTextSize(3);
+            tft.setCursor(40, 90);
+            tft.println("REFRESHING");
+            tft.setTextSize(2);
+            tft.setTextColor(TFT_WHITE, TFT_BLACK);
+            tft.setCursor(60, 130);
+            tft.println("Please wait...");
+            delay(800); // Show feedback
+        }
     }
 
-    // Fetch data from AirGradient API
-    HTTPClient http;
-    http.begin(API_ROOT + getDeviceId());
+    // Timed update or manual refresh
+    if (manualRefresh || millis() - lastUpdate > updateInterval) {
+        lastUpdate = millis();
 
-    int httpCode = http.GET();
-    if (httpCode == 200) {
-        String airData = http.getString();
-        payloadToDataInside(airData);
-        Serial.println("Data received successfully");
-        Serial.println(airData);
-    } else {
-        Serial.print("HTTP error: ");
-        Serial.println(httpCode);
+        // Check if WiFi is connected
+        if (WiFi.status() != WL_CONNECTED) {
+            Serial.println("WiFi disconnected, reconnecting...");
+            connectToWifi();
+            return;
+        }
+
+        // Show loading message only for manual refresh
+        if (manualRefresh) {
+            tft.fillScreen(TFT_BLACK);
+            tft.setTextColor(TFT_YELLOW, TFT_BLACK);
+            tft.setTextSize(3);
+            tft.setCursor(50, 80);
+            tft.println("UPDATING");
+
+            tft.setTextSize(2);
+            tft.setTextColor(TFT_WHITE, TFT_BLACK);
+            tft.setCursor(50, 130);
+            tft.println("Fetching data...");
+        }
+
+        // Fetch data from AirGradient API
+        HTTPClient http;
+        http.begin(API_ROOT + getDeviceId());
+        http.setTimeout(10000);  // 10 second timeout
+        http.setReuse(false);    // Prevent memory leaks
+
+        int httpCode = http.GET();
+        if (httpCode == 200) {
+            if (manualRefresh) {
+                tft.setCursor(50, 130);
+                tft.setTextColor(TFT_GREEN, TFT_BLACK);
+                tft.println("Processing...    ");
+            }
+
+            String airData = http.getString();
+            payloadToDataInside(airData);
+            Serial.println("Data received successfully");
+        } else {
+            Serial.print("HTTP error: ");
+            Serial.println(httpCode);
+
+            // Show error only for manual refresh
+            if (manualRefresh) {
+                tft.fillScreen(TFT_BLACK);
+                tft.setTextColor(TFT_RED, TFT_BLACK);
+                tft.setTextSize(2);
+                tft.setCursor(10, 100);
+                tft.print("HTTP Error: ");
+                tft.println(httpCode);
+                delay(3000);
+            }
+        }
+        http.end();
+
+        delay(500);
+
+        // Update the display with fetched data
+        updateDisplay();
     }
-    http.end();
 
-    delay(1000);
-
-    // Update the display with fetched data
-    updateDisplay();
-
-    // Wait 2 minutes before next update
-    delay(120000);
-
-    // Show loading message
-    tft.fillScreen(TFT_BLACK);
-    tft.setTextColor(TFT_WHITE, TFT_BLACK);
-    tft.setTextSize(2);
-    tft.setCursor(10, 100);
-    tft.println("Requesting data...");
+    // Small delay to avoid busy loop
+    delay(50);
 }
 
 // ----------------------------
@@ -401,6 +492,7 @@ void updateDisplay() {
     tft.setTextSize(1);
     tft.setTextColor(TFT_DARKGREY, TFT_BLACK);
     tft.setCursor(5, y);
+    tft.println("Updated: ");
     tft.println(indoor_date);
 }
 
