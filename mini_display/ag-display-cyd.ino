@@ -7,16 +7,16 @@ It displays indoor and outdoor air quality data from the AirGradient platform.
 Hardware: ESP32 Cheap Yellow Display (CYD)
 - 320x240 ILI9341 or ST7789 display
 - XPT2046 touch controller
-- ESP32 microcontroller
+- ESP32 micro-controller
 
 For build instructions visit: https://www.airgradient.com/resources/airgradient-diy-display/
 For CYD info: https://github.com/witnessmenow/ESP32-Cheap-Yellow-Display
 
 Required libraries:
-- "WiFiManager by tzapu, tablatronix" tested with Version 2.0.16
-- "TFT_eSPI" by Bodmer tested with Version 2.5.33
-- "ArduinoJSON" by Benoit Blanchon tested with Version 6.21.0
-- "XPT2046_Touchscreen" by Paul Stoffregen
+- "WiFiManager by tzapu, tablatronix" tested with Version 2.0.17
+- "TFT_eSPI" by Bodmer tested with Version 2.5.43
+- "ArduinoJSON" by Benoit Blanchon tested with Version 7.4.2
+- "XPT2046_Touchscreen" by Paul Stoffregen with Version 1.4.0+sha.f956c5d
 
 Configuration:
 Set inUSaqi and inF below to display PM2.5 in US AQI and temperature in Fahrenheit.
