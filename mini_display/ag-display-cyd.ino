@@ -382,7 +382,7 @@ uint16_t getColorFromString(String colorStr) {
 // Update display with air quality data
 // ----------------------------
 void updateDisplay() {
-    int y = 20;
+    int y = 2;
     int boxHeight = 60;
     int boxWidth = 140;
     int radius = 8;
