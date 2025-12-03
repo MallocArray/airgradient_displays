@@ -15,18 +15,28 @@ This project is intended for hobbyists and makers who want to run the AirGradien
 
 - ESP32 based Cheap Yellow Display (CYD) such as [this one](https://www.aliexpress.us/item/3256804774970998.html?aff_fcid=833907b4e99a4b60b55ec4424b7768bb-1762221082683-09002-_DkSpIjB&tt=CPS_NORMAL&aff_fsk=_DkSpIjB&aff_platform=shareComponent-detail&sk=_DkSpIjB&aff_trace_key=833907b4e99a4b60b55ec4424b7768bb-1762221082683-09002-_DkSpIjB&terminal_id=a4a5de52b7ad4ef3ab00acde7041ad9b&afSmartRedirect=y&gatewayAdapt=glo2usa4itemAdapt) for ~$15
   - For more information, visit [https://github.com/witnessmenow/ESP32-Cheap-Yellow-Display](https://github.com/witnessmenow/ESP32-Cheap-Yellow-Display)
+- USB cable compatible with your CYD board
+
+### Optional
+
 - Visual Studio Code
 - PlatformIO extension for VS Code
-- USB cable compatible with your CYD board
-- Windows PowerShell (instructions below use PowerShell)
+- Arduino IDE
 
-## Quick start — Build and upload using VS Code + PlatformIO
+## Build and upload using VS Code + PlatformIO
 
 1. Open this folder in Visual Studio Code. Use `File -> Open Folder...` and select the `mini_display_cyd` folder.
 2. Install the PlatformIO extension if you haven't already. In VS Code, open the Extensions view and search for "PlatformIO IDE" and install it.
 3. Confirm PlatformIO recognizes the project. The `platformio.ini` in this folder contains the build configuration for the CYD target. You should see PlatformIO status in the bottom bar of VS Code.
 4. Build the firmware:
-   1. Command line
+
+    ### VS Code with PlatformIO
+
+      Click the Checkbox button at on the bottom bar of VSCode to build and upload
+      or
+      Use the PlatformIO GUI: open the PlatformIO sidebar, choose "Project Tasks > [environment name] > Build" then "Upload".
+
+    ### Command line with PlatformIO
 
         ```powershell
         # From the terminal inside VS Code (PowerShell) run:
@@ -40,12 +50,33 @@ This project is intended for hobbyists and makers who want to run the AirGradien
         platformio run --target upload
         ```
 
-    2. VS Code
-        Click the Checkbox button at on the bottom bar of VSCode to build and upload
-        or
-        Use the PlatformIO GUI: open the PlatformIO sidebar, choose "Project Tasks > [environment name] > Build" then "Upload".
+## Building and upload with Arduino IDE
 
-## Dashboard Configuration
+1. Install latest Arduino IDE environment
+1. Install ESP32 in Boards Manager
+    - Tools>Boards>Boards Manager and install "esp32 by Espressif Systems". Tested with 2.0.17 and 3.3.3
+1. Install required libraries from Sketch>Include Library>Manage Libraries
+    - TFT_eSPI
+    - XPT2046_Touchscreen
+    - ArduinoJson
+    - WiFiManager
+1. Setup display
+    - Copy User_Setup.h from this project folder into the `TFT_eSPI` folder in your Arduino libraries folder
+    - See [https://randomnerdtutorials.com/cheap-yellow-display-esp32-2432s028r/](https://randomnerdtutorials.com/cheap-yellow-display-esp32-2432s028r/) for details under heading "Prepare User_Setup.h Config File for TFT_eSPI Library"
+1. Configure board under Tools
+    - Board: ESP32 Dev Module
+    - CPU Frequency: 240MHz
+    - Core Debug Level: None
+    - Erase All Flash Before Sketch Upload: Disabled
+    - Events Run On: "Core 1"
+    - Flash Frequency: "80Mhz"
+    - Flash Mode: "QIO"
+    - Flash Size: "4MB (32Mb)"
+    - Partition Scheme: "Minimal SPIFFS (1.9MB APP with OTA/190KB SPIFFS)"
+    - Upload Speed: "921600"
+1. Verify/Compile and Upload
+
+## AirGradient Dashboard Configuration
 
 Once the hardware is setup, additional configuration is needed in the AirGradient Dashboard site.
 
@@ -58,15 +89,16 @@ Once the hardware is setup, additional configuration is needed in the AirGradien
 ## Notes about serial port and board selections
 
 - If your board requires a specific upload protocol or serial port definition, edit `platformio.ini` and set `upload_port` or the appropriate `board`/`platform` entries. See PlatformIO documentation for details.
-- On Windows, the serial port will be like `COM3`, `COM4`, etc. You can get the port in PowerShell with:
-
-```powershell
-# List serial devices (PowerShell)
-Get-WmiObject Win32_SerialPort | Select-Object DeviceID,Caption
-```
+- On Windows, the serial port will be like `COM3`, `COM4`, etc.
 
 ## Troubleshooting
 
 - Build errors: ensure PlatformIO dependencies are installed (PlatformIO will attempt to download platforms and libraries automatically). If the build fails due to missing libraries, open the `platformio.ini` and check the `lib_deps` section.
 - Upload errors: confirm the board is in the correct bootloader/upload mode (some boards require holding a button or resetting while the serial port is active). Also ensure no other program (like a serial monitor) is keeping the port open.
 - If PlatformIO can't detect the board: verify the `board` field in `platformio.ini` matches a supported board, or set `upload_port` explicitly.
+
+## Support me
+
+[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/O5O31C8PHG)
+
+[![PayPal](https://img.shields.io/badge/PayPal-00457C?style=for-the-badge&logo=paypal&logoColor=white)](https://paypal.me/mallocarray)
